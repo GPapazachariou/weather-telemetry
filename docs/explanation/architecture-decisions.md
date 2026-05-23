@@ -77,7 +77,7 @@ The server's `handle_client()` function reads this line using `reader.readline()
 
 `validate_batch()` performs all-or-nothing validation:
 - Batch must be a list with ≤50 readings.
-- Each reading must have: station_id (non-empty string), timestamp (valid ISO 8601), temperature (-10 to 40 °C, finite), humidity (0–100 %, finite), windspeed (0–50 m/s, finite).
+- Each reading must have: station_id (safe non-empty string, max 64 chars), timestamp (valid timezone-aware ISO 8601), temperature (-40 to 85 °C, finite), humidity (0–100 %, finite), windspeed (0–100 m/s, finite).
 
 If validation passes, the batch is enqueued to `write_queue` with a result future. The single `db_writer_task()` dequeues and performs `executemany()` in a transaction. On commit, the future is resolved with the insert count. The client receives `{"status":"ok","inserted":<count>}`. If validation fails or a database error occurs, the client receives `{"status":"error","reason":"<message>"}` and the connection remains open for retries.
 
@@ -176,11 +176,11 @@ A producer batch is a JSON array of reading objects. Example:
 
 | Field | Type | Range / Constraint | Example |
 |-------|------|-------------------|---------|
-| `station_id` | string (non-empty) | 1–256 chars | `"STATION-001"` |
-| `timestamp` | string (ISO 8601) | Formats: `2025-01-17T14:30:45Z` or `2025-01-17T14:30:45+00:00` | `"2025-01-17T14:30:45Z"` |
-| `temperature` | number (finite) | –10 to 40 °C | `22.5` |
+| `station_id` | string (non-empty) | 1–64 chars, letters/numbers/underscore/dash/dot/colon | `"STATION-001"` |
+| `timestamp` | string (timezone-aware ISO 8601) | Formats: `2025-01-17T14:30:45Z` or `2025-01-17T14:30:45+00:00`; stored normalized to UTC | `"2025-01-17T14:30:45Z"` |
+| `temperature` | number (finite) | –40 to 85 °C | `22.5` |
 | `humidity` | number (finite) | 0 to 100 % | `58.3` |
-| `windspeed` | number (finite) | 0 to 50 m/s | `4.2` |
+| `windspeed` | number (finite) | 0 to 100 m/s | `4.2` |
 
 **Batch constraints:**
 
@@ -198,7 +198,7 @@ Success:
 
 Error:
 ```json
-{"status": "error", "reason": "invalid_temperature at index 0 (expected -10..40)"}
+{"status": "error", "reason": "invalid temperature at index 0 (expected -40..85)"}
 ```
 
 ### 4.3 Consumer Message Format (Read-Only Request)
@@ -283,9 +283,9 @@ Error (server error):
 - Raises `ValueError` if not finite or wrong type.
 
 **Range validation ([`server/protocol.py`](server/protocol.py), `validate_batch()`):**
-- Temperature: –10 to 40 °C.
+- Temperature: –40 to 85 °C.
 - Humidity: 0 to 100 %.
-- Windspeed: 0 to 50 m/s.
+- Windspeed: 0 to 100 m/s.
 - Invalid values are rejected with clear error message indicating the index and range.
 
 **Line size ([`server/app.py`](server/app.py), `handle_client()`):**
@@ -370,7 +370,7 @@ CREATE TABLE readings (
 - **station_id:** Station identifier (string), indexed implicitly for filtering.
 - **timestamp:** ISO 8601 string (not stored as DATETIME for simplicity; parsing done in web layer).
 - **temperature, humidity, windspeed:** REAL (floating-point) for sensor values.
-- **No indexes:** For simplicity and to avoid write overhead. In production, add indexes on `(station_id, id DESC)` for fast latest-per-station queries and `(timestamp)` for time-range queries.
+- **Indexes:** The server creates `(station_id, id DESC)` for latest/recent queries and `(station_id, timestamp)` for dashboard time-range queries.
 
 **Connection usage:**
 - **Server writer task:** Opens one persistent connection (`db_writer_task()` calls `await aiosqlite.connect(DB_FILE)` once). All batches are written through this single connection.
@@ -379,7 +379,7 @@ CREATE TABLE readings (
 
 **Tradeoffs:**
 - **No partitioning:** All readings in one table. For very large datasets (millions of rows), queries become slower without indexes. Mitigation: add indexes on frequently queried columns.
-- **String timestamps:** Storing timestamps as TEXT instead of DATETIME means no native database date functions. Mitigation: web layer parses and filters; queries that need time ranges can use string comparison (e.g., `ORDER BY timestamp DESC`).
+- **String timestamps:** Timestamps are stored as normalized UTC ISO 8601 text. This keeps the schema simple while allowing indexed dashboard range queries.
 - **No backup strategy:** File is in a Docker volume. If volume is lost, data is gone. For production, use external backups or a database backup sidecar container.
 
 **Alternatives considered:**
@@ -504,7 +504,7 @@ CREATE TABLE readings (
 - **Time ranges:** 6h, 24h (stored as `VALID_RANGES` dict mapping to `timedelta`).
 - **Limits (record count):** 10, 50, 100, 500 (for "last N" queries).
 - **Metrics:** temperature, humidity, windspeed (stored in `VALID_METRICS` set).
-- **Station ID:** Any string; matched against DB `station_id` column.
+- **Station ID:** Safe station identifier; max 64 chars, limited to letters, numbers, underscore, dash, dot, and colon.
 
 **Query implementation:**
 
@@ -539,7 +539,7 @@ stats = {
 
 **Tradeoffs:**
 - **No pagination:** Limits are hardcoded (10, 50, 100, 500). For very large datasets, a single `/api/readings` request could return 500 rows, making the response slow. Mitigation: add offset/page parameters.
-- **String timestamp comparison:** `ORDER BY timestamp DESC` on strings works only if timestamps are ISO 8601 formatted consistently. Works for UTC offsets (0:00, -5:00, +2:00) but fails for different formats. Mitigation: enforce strict timestamp format in validation or convert to DATETIME.
+- **Timestamp comparison:** Incoming timestamps must include a timezone and are normalized to UTC before storage, so indexed string comparisons remain consistent.
 - **No caching:** Each request queries the database. With many concurrent dashboard users, database load could spike. Mitigation: add HTTP caching headers (`Cache-Control: max-age=60`) or an in-memory cache layer (Redis).
 
 **Alternatives considered:**
@@ -568,7 +568,7 @@ stats = {
    - Check all required fields present: `station_id`, `timestamp`, `temperature`, `humidity`, `windspeed`.
    - Validate `station_id`: is string, non-empty.
    - Validate `timestamp`: call `validate_timestamp()` (ISO 8601 format).
-   - Validate `temperature`: call `validate_finite_number()`, check range [–10, 40].
+   - Validate `temperature`: call `validate_finite_number()`, check range [–40, 85].
    - Validate `humidity`: call `validate_finite_number()`, check range [0, 100].
    - Validate `windspeed`: call `validate_finite_number()`, check range [0, 50].
 4. Return `None` (implicit success).
@@ -580,7 +580,7 @@ stats = {
 "batch size exceeds limit"
 "missing station_id at index 2"
 "invalid_timestamp at index 1: invalid_timestamp: 2025-01-17"
-"invalid temperature at index 0 (expected -10..40)"
+"invalid temperature at index 0 (expected -40..85)"
 "non_finite_number: temperature=nan"
 ```
 
@@ -616,7 +616,7 @@ CREATE TABLE readings (
 | `id` | INTEGER PRIMARY KEY | Unique row identifier | Auto-incrementing; used for `ORDER BY id DESC` to get latest readings. |
 | `station_id` | TEXT | Station identifier | Identifies which sensor station collected this reading (e.g., "STATION-001"). Non-empty string enforced by validation. |
 | `timestamp` | TEXT | Measurement time | ISO 8601 format (e.g., "2025-01-17T14:30:45Z"). Stored as string for simplicity; parsing in application layer. |
-| `temperature` | REAL | Temperature (°C) | Floating-point value in range [–10, 40]. Finite, validated before insert. |
+| `temperature` | REAL | Temperature (°C) | Floating-point value in range [–40, 85]. Finite, validated before insert. |
 | `humidity` | REAL | Relative humidity (%) | Floating-point value in range [0, 100]. Finite, validated before insert. |
 | `windspeed` | REAL | Wind speed (m/s) | Floating-point value in range [0, 50]. Finite, validated before insert. |
 
@@ -662,7 +662,7 @@ SELECT * FROM readings WHERE station_id = ? ORDER BY id DESC LIMIT ?;
 ### 6.4 Assumptions & Edge Cases
 
 **Assumptions:**
-- **Timestamps are UTC or have consistent offset.** Comparisons assume all timestamps are in the same timezone. Mixing UTC with local times would break time-range queries.
+- **Timestamps are normalized UTC.** The server accepts `Z` or explicit offsets, rejects naive timestamps, and stores UTC ISO strings.
 - **Client clocks are reasonably synchronized.** Timestamps come from clients; if a client's clock is way off, readings will appear out of order or missing from time ranges.
 - **`id` order correlates with insertion order.** True for single-writer model. If multiple writers were used, `id` order might not reflect true insertion order.
 
@@ -770,8 +770,8 @@ networks:
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `DB_PATH` | `/app/data/weather.db` | SQLite database file path. Set in `docker-compose.yml` to `/app/data/weather.db` (inside volume). |
-| `SERVER_HOST` | `0.0.0.0` (implicit) | Not configurable in current code; hardcoded. For Docker, listens on all interfaces. |
-| `SERVER_PORT` | `12345` (implicit) | Hardcoded in `server/app.py`. |
+| `SERVER_HOST` | `0.0.0.0` | TCP bind address. |
+| `SERVER_PORT` | `12345` | TCP port. |
 
 **Client** (`station_client/client.py`):
 
@@ -819,14 +819,14 @@ networks:
 
 ### 8.1 Current Limitations
 
-1. **SQLite scaling:** Table with millions of rows becomes slow without indexes. No indexing strategy in current schema.
-   - **Mitigation:** Add indexes on `(station_id, id DESC)` for fast latest-per-station; `(timestamp)` for time ranges.
+1. **SQLite scaling:** The current indexes support the demo query patterns, but a table with millions of rows will still need retention, aggregation, or a server database.
+   - **Mitigation:** Add retention jobs, summary tables, or migrate to PostgreSQL for larger deployments.
 
 2. **No authentication/authorization:** Any client can connect and read all data. No per-user or per-station access control.
    - **Mitigation:** Add API key or JWT token validation in server and web layer.
 
-3. **Timestamp parsing assumptions:** Assumes all client timestamps are in the same timezone (UTC by convention). No enforcement.
-   - **Mitigation:** Web layer warns if timestamps are not UTC; server rejects non-ISO 8601 formats.
+3. **Clock skew:** Timestamps are normalized to UTC, but the client still supplies measurement time.
+   - **Mitigation:** Add `server_received_at` if server-side arrival time matters.
 
 4. **Fixed batch size limit (50 readings):** Hard limit in `MAX_BATCH_SIZE`. If a client needs to send more readings per batch, code must change.
    - **Mitigation:** Parameterize limit; allow per-client configuration.
@@ -840,8 +840,8 @@ networks:
 7. **No metrics / observability:** No Prometheus metrics, tracing, or detailed logging of queue depth, write latency, etc.
    - **Mitigation:** Add OpenTelemetry instrumentation; expose metrics on `/metrics` endpoint.
 
-8. **Web UI: no real-time updates:** Dashboard polls `/api/*` endpoints. Not live streaming.
-   - **Mitigation:** Add WebSocket support for server-push updates.
+8. **Web UI: polling instead of push:** Dashboard polls `/api/*` endpoints every few seconds. This is adequate for the demo but not true streaming.
+   - **Mitigation:** Add WebSocket or Server-Sent Events support for server-push updates.
 
 9. **Client buffer overflow silently drops readings:** If buffer fills (1000 readings), new readings are discarded without logging.
    - **Mitigation:** Log a warning when buffer is full; expose buffer depth metric.

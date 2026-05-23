@@ -1,4 +1,5 @@
 let chart = null;
+let autoRefreshInFlight = false;
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
@@ -20,40 +21,73 @@ document.addEventListener('DOMContentLoaded', async () => {
     await refreshAll();
 
     // Auto-refresh every 5 seconds to match station batch interval
-    setInterval(refreshAll, 5000);
+    setInterval(autoRefresh, 5000);
 });
 
 /**
  * Load available stations from API
  */
-async function loadStations() {
+async function loadStations({ preserveSelection = true } = {}) {
     try {
         const response = await fetch('/api/stations');
         const data = await response.json();
         const stations = data.stations || [];
         
         const select = document.getElementById('station-select');
+        const previousSelection = preserveSelection ? select.value : '';
         
         if (stations.length === 0) {
             console.warn('[Stations] No stations found');
-            select.innerHTML = '<option value="">No stations available</option>';
+            replaceSelectOptions(select, [{ value: '', label: 'No stations available' }]);
             showEmptyState();
-            return;
+            return false;
         }
         
         // Populate dropdown
-        select.innerHTML = stations
-            .map(s => `<option value="${s}">${s}</option>`)
-            .join('');
+        replaceSelectOptions(
+            select,
+            stations.map(station => ({ value: station, label: station }))
+        );
         
-        // Select first station by default
-        select.value = stations[0];
-        console.log(`[Stations] Loaded ${stations.length} stations, selected: ${stations[0]}`);
+        // Preserve selected station when possible; otherwise select first station.
+        select.value = stations.includes(previousSelection) ? previousSelection : stations[0];
+        console.log(`[Stations] Loaded ${stations.length} stations, selected: ${select.value}`);
+        return true;
         
     } catch (error) {
         console.error('[Error] Failed to load stations:', error);
-        document.getElementById('station-select').innerHTML = '<option value="">Error loading</option>';
+        replaceSelectOptions(
+            document.getElementById('station-select'),
+            [{ value: '', label: 'Error loading' }]
+        );
         showEmptyState();
+        return false;
+    }
+}
+
+function replaceSelectOptions(select, options) {
+    select.replaceChildren();
+    for (const item of options) {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+    }
+}
+
+async function autoRefresh() {
+    if (autoRefreshInFlight) {
+        return;
+    }
+
+    autoRefreshInFlight = true;
+    try {
+        const hasStations = await loadStations({ preserveSelection: true });
+        if (hasStations) {
+            await refreshAll();
+        }
+    } finally {
+        autoRefreshInFlight = false;
     }
 }
 
@@ -322,14 +356,19 @@ function rollingAverage(points, windowSize) {
  */
 function renderTable(points) {
     const tbody = document.getElementById('table-body');
-    tbody.innerHTML = points
-        .map(p => `
-            <tr>
-                <td>${formatTime(p.t)}</td>
-                <td>${p.v.toFixed(2)}</td>
-            </tr>
-        `)
-        .join('');
+    tbody.replaceChildren();
+
+    for (const point of points) {
+        const row = document.createElement('tr');
+        const timeCell = document.createElement('td');
+        const valueCell = document.createElement('td');
+
+        timeCell.textContent = formatTime(point.t);
+        valueCell.textContent = point.v.toFixed(2);
+
+        row.append(timeCell, valueCell);
+        tbody.appendChild(row);
+    }
 }
 
 /**

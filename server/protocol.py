@@ -4,7 +4,8 @@ Defines protocol constants and validation for weather data batches.
 """
 
 import math
-from datetime import datetime
+import re
+from datetime import datetime, timezone
 
 
 # Protocol limits
@@ -21,6 +22,25 @@ WINDSPEED_MAX = 100
 
 # Station ID constraints
 STATION_ID_MAX_LENGTH = 64
+STATION_ID_PATTERN = re.compile(r"^[A-Za-z0-9_.:-]+$")
+
+
+def _parse_timestamp(timestamp_str: str) -> datetime:
+    """Parse an ISO 8601 timestamp and require timezone information."""
+    if not isinstance(timestamp_str, str):
+        raise ValueError("timestamp must be a string")
+
+    normalized = timestamp_str.replace('Z', '+00:00') if timestamp_str.endswith('Z') else timestamp_str
+
+    try:
+        dt = datetime.fromisoformat(normalized)
+    except (ValueError, TypeError):
+        raise ValueError(f"invalid_timestamp: {timestamp_str}")
+
+    if dt.tzinfo is None or dt.utcoffset() is None:
+        raise ValueError(f"timestamp must include timezone: {timestamp_str}")
+
+    return dt
 
 
 def validate_timestamp(timestamp_str: str) -> None:
@@ -29,16 +49,12 @@ def validate_timestamp(timestamp_str: str) -> None:
     Accepts 'Z' suffix or explicit timezone offsets.
     Raises ValueError if invalid.
     """
-    if not isinstance(timestamp_str, str):
-        raise ValueError("timestamp must be a string")
-    
-    # Normalize 'Z' suffix to '+00:00' for fromisoformat compatibility
-    normalized = timestamp_str.replace('Z', '+00:00') if timestamp_str.endswith('Z') else timestamp_str
-    
-    try:
-        datetime.fromisoformat(normalized)
-    except (ValueError, TypeError):
-        raise ValueError(f"invalid_timestamp: {timestamp_str}")
+    _parse_timestamp(timestamp_str)
+
+
+def normalize_timestamp_utc(timestamp_str: str) -> str:
+    """Return timestamp normalized to UTC ISO 8601 with +00:00 offset."""
+    return _parse_timestamp(timestamp_str).astimezone(timezone.utc).isoformat()
 
 
 def validate_finite_number(value, field_name: str) -> None:
@@ -101,6 +117,11 @@ def validate_batch(batch: list) -> None:
             raise ValueError(f"empty station_id at index {index}")
         if len(item["station_id"]) > STATION_ID_MAX_LENGTH:
             raise ValueError(f"station_id too long at index {index} (max {STATION_ID_MAX_LENGTH} chars)")
+        if not STATION_ID_PATTERN.fullmatch(item["station_id"]):
+            raise ValueError(
+                f"invalid station_id at index {index} "
+                "(allowed: letters, numbers, underscore, dash, dot, colon)"
+            )
         
         # Rule 6: timestamp must be valid ISO 8601 format
         try:

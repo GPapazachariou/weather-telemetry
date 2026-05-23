@@ -4,6 +4,7 @@ WORKDIR /app
 
 # Copy client code (no external dependencies needed)
 COPY client.py .
+COPY sensors.py .
 
 # Set default environment variables (can be overridden in docker-compose)
 ENV WEATHER_STATION_HOST=server

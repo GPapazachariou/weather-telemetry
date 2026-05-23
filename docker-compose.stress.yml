@@ -1,5 +1,3 @@
-version: '3.8'
-
 # ============================================================================
 # STRESS TEST DOCKER COMPOSE FOR WEATHER STATION SIMULATOR
 # ============================================================================
@@ -93,6 +91,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -113,6 +112,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -133,6 +133,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -153,6 +154,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -173,6 +175,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -193,6 +196,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -213,6 +217,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -233,6 +238,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -253,6 +259,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -273,6 +280,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -293,6 +301,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -313,6 +322,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -333,6 +343,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -353,6 +364,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -373,6 +385,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -393,6 +406,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -413,6 +427,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -433,6 +448,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -453,6 +469,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -473,6 +490,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -493,6 +511,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -513,6 +532,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -533,6 +553,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -553,6 +574,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -573,6 +595,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -593,6 +616,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -613,6 +637,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -633,6 +658,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -653,6 +679,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -673,6 +700,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -693,6 +721,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -713,6 +742,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -733,6 +763,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -753,6 +784,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -773,6 +805,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -793,6 +826,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -813,6 +847,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -833,6 +868,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -853,6 +889,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -873,6 +910,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -893,6 +931,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -913,6 +952,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -933,6 +973,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -953,6 +994,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -973,6 +1015,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -993,6 +1036,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1013,6 +1057,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1033,6 +1078,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1053,6 +1099,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1073,6 +1120,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1093,6 +1141,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1113,6 +1162,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1133,6 +1183,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1153,6 +1204,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1173,6 +1225,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1193,6 +1246,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1213,6 +1267,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1233,6 +1288,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1253,6 +1309,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1273,6 +1330,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1293,6 +1351,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1313,6 +1372,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1333,6 +1393,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1353,6 +1414,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1373,6 +1435,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1393,6 +1456,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1413,6 +1477,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1433,6 +1498,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1453,6 +1519,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1473,6 +1540,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1493,6 +1561,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1513,6 +1582,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1533,6 +1603,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1553,6 +1624,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1573,6 +1645,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1593,6 +1666,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1613,6 +1687,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1633,6 +1708,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1653,6 +1729,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1673,6 +1750,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1693,6 +1771,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1713,6 +1792,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1733,6 +1813,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1753,6 +1834,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1773,6 +1855,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1793,6 +1876,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1813,6 +1897,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1833,6 +1918,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1853,6 +1939,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1873,6 +1960,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1893,6 +1981,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1913,6 +2002,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1933,6 +2023,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1953,6 +2044,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1973,6 +2065,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -1993,6 +2086,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -2013,6 +2107,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -2033,6 +2128,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -2053,6 +2149,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy
@@ -2073,6 +2170,7 @@ services:
       - WEATHER_STATION_BATCH_INTERVAL=1
       - WEATHER_STATION_TIMEOUT=5.0
       - WEATHER_STATION_MAX_RETRIES=3
+      - PYTHONUNBUFFERED=1
     depends_on:
       server:
         condition: service_healthy

@@ -9,7 +9,7 @@ import aiosqlite
 import signal
 import os
 from pathlib import Path
-from protocol import validate_batch, MAX_LINE_SIZE
+from protocol import validate_batch, normalize_timestamp_utc, MAX_LINE_SIZE
 
 
 # Database configuration - use environment variable with absolute path fallback
@@ -58,6 +58,12 @@ async def init_database():
                 windspeed REAL
             )
         """)
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_readings_station_id ON readings (station_id, id DESC)"
+        )
+        await db.execute(
+            "CREATE INDEX IF NOT EXISTS idx_readings_station_timestamp ON readings (station_id, timestamp)"
+        )
         await db.commit()
         print(f"Database initialized: {DB_FILE}")
 
@@ -341,6 +347,13 @@ async def handle_client(reader, writer):
                     # This raises ValueError on any validation error
                     # (includes timestamp format and numeric finiteness checks)
                     validate_batch(batch)
+
+                    # Store timestamps in one UTC representation so SQL range
+                    # filters and dashboard comparisons behave predictably.
+                    batch = [
+                        {**reading, "timestamp": normalize_timestamp_utc(reading["timestamp"])}
+                        for reading in batch
+                    ]
                     
                     # All-or-nothing: enqueue batch for sequential writing
                     inserted = await enqueue_batch(batch)

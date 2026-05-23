@@ -89,6 +89,7 @@ The **Weather Station Simulator** is a distributed, real-time data ingestion pla
 ### Python (for running tests/clients locally, optional)
 - Python 3.9+ (tested on 3.11)
 - No external dependencies for basic runs; see `server/requirements.txt`, `web/requirements.txt`, `station_client/requirements.txt` for containerized dependencies
+- Install `requirements-dev.txt` to run unit tests locally
 
 ---
 
@@ -99,7 +100,7 @@ The **Weather Station Simulator** is a distributed, real-time data ingestion pla
 **On Windows (PowerShell):**
 ```powershell
 # Navigate to project directory
-cd weather-station
+cd weather-telemetry
 
 # Start all services (server + 3 station clients + web UI)
 docker compose up --build
@@ -107,7 +108,7 @@ docker compose up --build
 
 **On macOS/Linux:**
 ```bash
-cd weather-station
+cd weather-telemetry
 docker compose up --build
 ```
 
@@ -150,9 +151,9 @@ docker compose logs -f
 docker compose down
 ```
 
-**Stop all services and delete volume (fresh start next time):**
+**Stop all services, delete volume, and remove orphan containers (fresh start next time):**
 ```bash
-docker compose down -v
+docker compose down -v --remove-orphans
 ```
 
 ---
@@ -301,7 +302,16 @@ Then open http://localhost:8000 in your browser.
 
 ## 7. Testing
 
-### 7.1 Consumer Protocol Tests
+### 7.1 Unit Tests
+
+Protocol validation has a focused pytest suite.
+
+```bash
+pip install -r requirements-dev.txt
+pytest tests/test_protocol.py
+```
+
+### 7.2 Consumer Protocol Tests
 
 The `consumer_client/test_consumer.py` script validates the producer batch ingest and consumer request paths.
 
@@ -324,7 +334,7 @@ python consumer_client/test_consumer.py
 
 **Success:** All 8 tests pass (✓ checkmarks in output).
 
-### 7.2 API Sanity Check
+### 7.3 API Sanity Check
 
 **Test API endpoints directly (via curl or browser):**
 
@@ -365,8 +375,8 @@ curl "http://localhost:8000/api/stats?station_id=STATION-001&metric=temperature&
 | Variable | Default | Purpose |
 |----------|---------|---------|
 | `DB_PATH` | `/app/data/weather.db` | Path to SQLite database file. Inside Docker, set to the mounted volume. |
-| `SERVER_HOST` | `0.0.0.0` (implicit) | Bind address; not configurable in current code. Listens on all interfaces. |
-| `SERVER_PORT` | `12345` (implicit) | TCP port; not configurable in current code. |
+| `SERVER_HOST` | `0.0.0.0` | TCP bind address. |
+| `SERVER_PORT` | `12345` | TCP port. |
 
 **Weather Station Client** (`station_client/client.py`):
 
@@ -448,11 +458,11 @@ python web/web.py
 ```
 
 **Field constraints:**
-- `station_id`: Non-empty string (e.g., "STATION-001")
-- `timestamp`: ISO 8601 format with Z or timezone offset (e.g., "2025-01-17T14:30:45Z", "2025-01-17T14:30:45+00:00")
-- `temperature`: Finite number, –10 to 40 °C
+- `station_id`: Non-empty string, max 64 chars, using letters/numbers/underscore/dash/dot/colon (e.g., "STATION-001")
+- `timestamp`: ISO 8601 format with Z or timezone offset; server stores normalized UTC (e.g., "2025-01-17T14:30:45Z", "2025-01-17T14:30:45+00:00")
+- `temperature`: Finite number, –40 to 85 °C
 - `humidity`: Finite number, 0 to 100 %
-- `windspeed`: Finite number, 0 to 50 m/s
+- `windspeed`: Finite number, 0 to 100 m/s
 
 **Server response (success):**
 ```json
@@ -461,7 +471,7 @@ python web/web.py
 
 **Server response (error):**
 ```json
-{"status": "error", "reason": "invalid_temperature at index 0 (expected -10..40)"}
+{"status": "error", "reason": "invalid temperature at index 0 (expected -40..85)"}
 ```
 
 ---
@@ -562,7 +572,7 @@ Get the last N readings (global or for a specific station).
 ## 10. Project Structure
 
 ```
-weather-station/
+weather-telemetry/
 ├── README.md                          # This file
 ├── docker-compose.yml                 # Main Compose (3 stations, normal)
 ├── docker-compose.stress.yml          # Stress Compose (100 stations, fast)
@@ -576,6 +586,7 @@ weather-station/
 ├── station_client/                    # Weather Station Client
 │   ├── Dockerfile
 │   ├── client.py                      # Client logic (resilience + buffering)
+│   ├── sensors.py                     # Simulated sensor driver + hardware stubs
 │   └── requirements.txt                # (No external dependencies)
 │
 ├── web/                               # Flask Web UI
@@ -589,20 +600,18 @@ weather-station/
 │       └── styles.css                 # Dashboard styles
 │
 ├── consumer_client/                   # Consumer Test Harness
-│   ├── test_consumer.py               # Protocol tests (producer + consumer)
-│   └── test_api.py                    # API sanity check
+│   └── test_consumer.py               # Protocol tests (producer + consumer)
+│
+├── tests/                             # Unit tests
+│   └── test_protocol.py               # Protocol validation tests
 │
 ├── scripts/                           # Utilities
-│   └── gen_stress_compose.py          # Auto-generates stress Compose
+│   ├── gen_stress_compose.py          # Auto-generates stress Compose
+│   └── update_stress_compose.py       # Idempotent helper for stress Compose env vars
 │
 ├── docs/                              # Documentation
-│   ├── architecture-decisions.md      # Detailed architecture & design decisions
-│   ├── QUICK_START.md
-│   ├── DOCKER.md
-│   ├── ARCHITECTURE.md
-│   ├── app.md
-│   ├── client.md
-│   └── web.md
+│   ├── explanation/                   # Detailed architecture and file notes
+│   └── diagrams/                      # Mermaid architecture diagrams
 │
 └── data/                              # (Local only, non-Docker)
     └── weather.db                     # SQLite database (if running locally)
@@ -650,9 +659,7 @@ weather-station/
 
 ## Additional Resources
 
-- **Architecture Details:** See [docs/architecture-decisions.md](docs/architecture-decisions.md) for protocol, design decisions, and limitations.
-- **Docker Setup:** See [docs/DOCKER.md](docs/DOCKER.md).
-- **Quick References:** See [docs/QUICK_START.md](docs/QUICK_START.md).
+- **Architecture Details:** See [docs/explanation/architecture-decisions.md](docs/explanation/architecture-decisions.md) for protocol, design decisions, and limitations.
 
 ---
 
@@ -690,7 +697,7 @@ weather-station/
 - Port conflicts: change published ports in compose (`12345:12345`, `8000:8000`) or stop conflicting services.
 - Database locked errors: should be rare due to single-writer + WAL; if seen, verify only one server is writing and volume is not mounted read/write elsewhere.
 - Containers restarting: inspect logs for exceptions; confirm volume path writable; check healthcheck failures.
-- Web UI stuck on “loading”: verify web can read DB path, DB file exists, and station list query returns rows; reload after data arrives.
+- Web UI stuck on “loading”: verify web can read DB path and the DB file exists; the station list is polled automatically while clients start.
 
 ## 14. Project Requirements Mapping
 - Socket ingestion: asyncio TCP server with newline-delimited JSON on 12345; clients use raw sockets.
@@ -714,6 +721,6 @@ weather-station/
 	```
 - Remove containers and data volume (irreversible):
 	```bash
-	docker compose down -v
+	docker compose down -v --remove-orphans
 	```
-- To reset stress run artifacts: same `down -v` after using `-f docker-compose.stress.yml`.
+- To reset stress run artifacts: same `down -v --remove-orphans` after using `-f docker-compose.stress.yml`.

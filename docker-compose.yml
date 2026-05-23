@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   # TCP Server - receives weather data and stores in SQLite
   server:

@@ -6,7 +6,7 @@ Minimal Flask app for visualizing weather data from SQLite database.
 import os
 import sqlite3
 import logging
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from flask import Flask, render_template, jsonify, request
 
@@ -51,16 +51,22 @@ def get_db():
 
 
 def parse_timestamp(ts):
-    """Parse ISO 8601 timestamp to datetime (returns naive datetime)."""
+    """Parse ISO 8601 timestamp to an aware UTC datetime."""
     try:
         dt = datetime.fromisoformat(ts.replace("Z", "+00:00"))
-        # Strip timezone info to avoid comparison issues
-        return dt.replace(tzinfo=None)
+        if dt.tzinfo is None:
+            return dt.replace(tzinfo=timezone.utc)
+        return dt.astimezone(timezone.utc)
     except (ValueError, AttributeError):
         try:
-            return datetime.fromtimestamp(float(ts))
+            return datetime.fromtimestamp(float(ts), tz=timezone.utc)
         except (ValueError, TypeError):
             return None
+
+
+def utc_cutoff(duration):
+    """Return an aware UTC cutoff timestamp for a dashboard time window."""
+    return datetime.now(timezone.utc) - duration
 
 
 @app.route("/")
@@ -138,16 +144,27 @@ def api_stats():
         )
 
     # Calculate time window (if time-based)
-    cutoff = datetime.now() - VALID_RANGES[time_range] if not use_limit else None
+    cutoff = utc_cutoff(VALID_RANGES[time_range]) if not use_limit else None
 
     try:
         conn = get_db()
         db_metric = _METRIC_COLUMN[metric]
 
-        cursor = conn.execute(
-            "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY timestamp DESC",
-            (station_id,),
-        )
+        if use_limit:
+            cursor = conn.execute(
+                "SELECT timestamp, " + db_metric + " AS value "
+                "FROM readings WHERE station_id = ? AND " + db_metric + " IS NOT NULL "
+                "ORDER BY id DESC LIMIT ?",
+                (station_id, VALID_LIMITS[limit]),
+            )
+        else:
+            cursor = conn.execute(
+                "SELECT timestamp, " + db_metric + " AS value "
+                "FROM readings WHERE station_id = ? AND timestamp >= ? AND " + db_metric + " IS NOT NULL "
+                "ORDER BY timestamp DESC",
+                (station_id, cutoff.isoformat()),
+            )
+
         rows = cursor.fetchall()
         conn.close()
 
@@ -155,24 +172,17 @@ def api_stats():
         values = []
         latest = None
         latest_t = None
-        count = 0
-        max_records = VALID_LIMITS[limit] if use_limit else float('inf')
 
         for row in rows:
-            if use_limit and count >= max_records:
-                break
-
             dt = parse_timestamp(row["timestamp"])
-            if not use_limit and (not dt or dt < cutoff):
+            if not dt or (not use_limit and dt < cutoff):
                 continue
 
-            val = row[db_metric]
-            if val is not None:
-                values.append(val)
-                if latest is None:
-                    latest = val
-                    latest_t = row["timestamp"]
-                count += 1
+            val = row["value"]
+            values.append(val)
+            if latest is None:
+                latest = val
+                latest_t = row["timestamp"]
 
         # Calculate stats
         if values:
@@ -238,7 +248,7 @@ def api_readings():
         return jsonify({"error": "Invalid range or limit", "points": []}), 400
 
     # Calculate time window (if time-based)
-    cutoff = datetime.now() - VALID_RANGES[time_range] if not use_limit else None
+    cutoff = utc_cutoff(VALID_RANGES[time_range]) if not use_limit else None
 
     try:
         conn = get_db()
@@ -247,7 +257,9 @@ def api_readings():
         if use_limit:
             # Fetch newest N rows DESC, then reverse to display oldest→newest in chart
             cursor = conn.execute(
-                "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY id DESC LIMIT ?",
+                "SELECT timestamp, " + db_metric + " FROM readings "
+                "WHERE station_id = ? AND " + db_metric + " IS NOT NULL "
+                "ORDER BY id DESC LIMIT ?",
                 (station_id, VALID_LIMITS[limit]),
             )
             rows = list(reversed(cursor.fetchall()))
@@ -255,12 +267,13 @@ def api_readings():
             points = [
                 {"t": row["timestamp"], "v": row[db_metric]}
                 for row in rows
-                if row[db_metric] is not None
             ]
         else:
             cursor = conn.execute(
-                "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY timestamp ASC",
-                (station_id,),
+                "SELECT timestamp, " + db_metric + " FROM readings "
+                "WHERE station_id = ? AND timestamp >= ? AND " + db_metric + " IS NOT NULL "
+                "ORDER BY timestamp ASC",
+                (station_id, cutoff.isoformat()),
             )
             rows = cursor.fetchall()
             conn.close()

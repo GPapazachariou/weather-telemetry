@@ -10,7 +10,13 @@ import pytest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "server"))
 
-from protocol import validate_batch, validate_timestamp, validate_finite_number, STATION_ID_MAX_LENGTH
+from protocol import (
+    validate_batch,
+    validate_timestamp,
+    validate_finite_number,
+    normalize_timestamp_utc,
+    STATION_ID_MAX_LENGTH,
+)
 
 
 # ---------------------------------------------------------------------------
@@ -58,6 +64,13 @@ class TestValidateTimestamp:
     def test_rejects_garbage_string(self):
         with pytest.raises(ValueError, match="invalid_timestamp"):
             validate_timestamp("17/01/2024 12:00")
+
+    def test_rejects_naive_timestamp(self):
+        with pytest.raises(ValueError, match="timestamp must include timezone"):
+            validate_timestamp("2024-01-17T12:00:00")
+
+    def test_normalizes_to_utc(self):
+        assert normalize_timestamp_utc("2024-01-17T14:00:00+02:00") == "2024-01-17T12:00:00+00:00"
 
 
 # ---------------------------------------------------------------------------
@@ -140,6 +153,17 @@ class TestValidateBatchStationId:
     def test_accepts_max_length_station_id(self):
         max_id = "X" * STATION_ID_MAX_LENGTH
         validate_batch([_valid_reading(station_id=max_id)])
+
+    def test_rejects_station_id_with_html(self):
+        with pytest.raises(ValueError, match="invalid station_id"):
+            validate_batch([_valid_reading(station_id="<script>bad</script>")])
+
+    def test_rejects_station_id_with_spaces(self):
+        with pytest.raises(ValueError, match="invalid station_id"):
+            validate_batch([_valid_reading(station_id="LAB STATION 1")])
+
+    def test_accepts_common_safe_station_id_chars(self):
+        validate_batch([_valid_reading(station_id="LAB-01.room_2:west")])
 
 
 # ---------------------------------------------------------------------------
