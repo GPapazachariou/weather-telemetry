@@ -3,7 +3,7 @@ FROM python:3.11-slim
 WORKDIR /app
 
 # Copy client code (no external dependencies needed)
-COPY client.py .
+COPY client.py sensors.py ./
 
 # Set default environment variables (can be overridden in docker-compose)
 ENV WEATHER_STATION_HOST=server
