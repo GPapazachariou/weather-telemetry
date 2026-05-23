@@ -16,8 +16,8 @@ from protocol import validate_batch, MAX_LINE_SIZE
 DB_FILE = os.getenv("DB_PATH", "/app/data/weather.db")
 
 # Server configuration
-HOST = "0.0.0.0"
-PORT = 12345
+HOST = os.getenv("SERVER_HOST", "0.0.0.0")
+PORT = int(os.getenv("SERVER_PORT", "12345"))
 
 # Global state
 write_queue = None

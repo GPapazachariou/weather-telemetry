@@ -32,47 +32,15 @@ VALID_LIMITS = {
     "100": 100,
     "500": 500,
 }
-# Valid metrics - we'll detect actual column name at runtime
+# Valid metrics mapped to their exact DB column names
 VALID_METRICS = {"temperature", "humidity", "windspeed"}
-
-# Cache for detected wind column name
-_wind_column_cache = None
+_METRIC_COLUMN = {
+    "temperature": "temperature",
+    "humidity": "humidity",
+    "windspeed": "windspeed",
+}
 
 app = Flask(__name__, template_folder="templates", static_folder="static")
-
-
-def detect_wind_column():
-    """Detect whether DB uses 'windspeed' or 'wind_speed' column."""
-    global _wind_column_cache
-    if _wind_column_cache is not None:
-        return _wind_column_cache
-    
-    try:
-        conn = get_db()
-        cursor = conn.execute("PRAGMA table_info(readings)")
-        columns = [row[1] for row in cursor.fetchall()]
-        conn.close()
-        
-        if "windspeed" in columns:
-            _wind_column_cache = "windspeed"
-        elif "wind_speed" in columns:
-            _wind_column_cache = "wind_speed"
-        else:
-            _wind_column_cache = "windspeed"  # default fallback
-        
-        logger.info(f"Detected wind column name: {_wind_column_cache}")
-        return _wind_column_cache
-    except Exception as e:
-        logger.warning(f"Could not detect wind column, using 'windspeed': {e}")
-        _wind_column_cache = "windspeed"
-        return _wind_column_cache
-
-
-def normalize_metric(metric):
-    """Convert UI metric name to actual DB column name."""
-    if metric in ("windspeed", "wind_speed"):
-        return detect_wind_column()
-    return metric
 
 
 def get_db():
@@ -174,17 +142,10 @@ def api_stats():
 
     try:
         conn = get_db()
-        
-        # Normalize metric name to match DB column
-        db_metric = normalize_metric(metric)
-        
+        db_metric = _METRIC_COLUMN[metric]
+
         cursor = conn.execute(
-            f"""
-            SELECT timestamp, {db_metric}
-            FROM readings
-            WHERE station_id = ?
-            ORDER BY timestamp DESC
-            """,
+            "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY timestamp DESC",
             (station_id,),
         )
         rows = cursor.fetchall()
@@ -200,11 +161,11 @@ def api_stats():
         for row in rows:
             if use_limit and count >= max_records:
                 break
-            
+
             dt = parse_timestamp(row["timestamp"])
             if not use_limit and (not dt or dt < cutoff):
                 continue
-            
+
             val = row[db_metric]
             if val is not None:
                 values.append(val)
@@ -281,44 +242,39 @@ def api_readings():
 
     try:
         conn = get_db()
-        
-        # Normalize metric name to match DB column
-        db_metric = normalize_metric(metric)
-        
-        cursor = conn.execute(
-            f"""
-            SELECT timestamp, {db_metric}
-            FROM readings
-            WHERE station_id = ?
-            ORDER BY timestamp ASC
-            """,
-            (station_id,),
-        )
-        rows = cursor.fetchall()
-        conn.close()
+        db_metric = _METRIC_COLUMN[metric]
 
-        # Filter by time range or limit, and ignore nulls, order oldest -> newest
-        points = []
-        count = 0
-        max_records = VALID_LIMITS[limit] if use_limit else float('inf')
-        
-        for row in rows:
-            if use_limit and count >= max_records:
-                break
-            
-            dt = parse_timestamp(row["timestamp"])
-            if not use_limit and (not dt or dt < cutoff):
-                continue
-            
-            val = row[db_metric]
-            if val is not None:
-                points.append({"t": row["timestamp"], "v": val})
-                count += 1
+        if use_limit:
+            # Fetch newest N rows DESC, then reverse to display oldest→newest in chart
+            cursor = conn.execute(
+                "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY id DESC LIMIT ?",
+                (station_id, VALID_LIMITS[limit]),
+            )
+            rows = list(reversed(cursor.fetchall()))
+            conn.close()
+            points = [
+                {"t": row["timestamp"], "v": row[db_metric]}
+                for row in rows
+                if row[db_metric] is not None
+            ]
+        else:
+            cursor = conn.execute(
+                "SELECT timestamp, " + db_metric + " FROM readings WHERE station_id = ? ORDER BY timestamp ASC",
+                (station_id,),
+            )
+            rows = cursor.fetchall()
+            conn.close()
+            points = []
+            for row in rows:
+                dt = parse_timestamp(row["timestamp"])
+                if not dt or dt < cutoff:
+                    continue
+                val = row[db_metric]
+                if val is not None:
+                    points.append({"t": row["timestamp"], "v": val})
 
         range_label = f"limit={limit}" if use_limit else f"range={time_range}"
-        logger.info(
-            f"Readings for {station_id}/{metric}/{range_label}: {len(points)} points"
-        )
+        logger.info(f"Readings for {station_id}/{metric}/{range_label}: {len(points)} points")
         return jsonify({"points": points})
 
     except Exception as e:
@@ -338,9 +294,5 @@ if __name__ == "__main__":
     if not DB_PATH.exists():
         logger.warning(f"Database not found: {DB_PATH}")
         logger.warning("Dashboard will start but show no data until server populates the DB.")
-    else:
-        # Detect and log wind column name
-        wind_col = detect_wind_column()
-        logger.info(f"Using wind column name: {wind_col}")
 
     app.run(host=WEB_HOST, port=WEB_PORT, debug=False, use_reloader=False)

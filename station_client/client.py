@@ -9,16 +9,17 @@ import json
 import random
 import os
 import argparse
-import hashlib
 import signal
 from collections import deque
 from datetime import datetime, timezone
+
+from sensors import SimulatedSensorDriver
 
 
 # Default configuration values
 DEFAULT_SERVER_HOST = "localhost"
 DEFAULT_SERVER_PORT = 12345
-DEFAULT_STATION_ID = "NEW_STATION"
+DEFAULT_STATION_ID = "STATION-001"
 DEFAULT_BATCH_SIZE_MIN = 1
 DEFAULT_BATCH_SIZE_MAX = 1
 DEFAULT_BATCH_INTERVAL = 5
@@ -156,93 +157,19 @@ CLI arguments override environment variables.
     }
 
 
-def stable_hash_int(s):
-    """
-    Generate a stable integer hash from a string using SHA256.
-    Returns an integer derived from the first 8 hex characters.
-    """
-    return int(hashlib.sha256(s.encode()).hexdigest()[:8], 16)
-
-
-def clamp(x, lo, hi):
-    """Clamp x to range [lo, hi]."""
-    return max(lo, min(hi, x))
-
-
-def mean_for(station_id, metric, lo, hi):
-    """
-    Calculate deterministic mean value for a station and metric.
-    
-    Args:
-        station_id: Station identifier
-        metric: Metric name
-        lo: Lower bound of range
-        hi: Upper bound of range
-    
-    Returns:
-        float: Deterministic mean value in range [lo, hi]
-    """
-    base = stable_hash_int(f"{station_id}:{metric}") % 50
-    return lo + (base / 49.0) * (hi - lo)
-
-
-def value_for(station_id, metric):
-    """
-    Generate a sensor value with deterministic mean + random noise.
-    
-    Args:
-        station_id: Station identifier
-        metric: Metric name ('temperature', 'humidity', 'windspeed')
-    
-    Returns:
-        float: Value with random noise, clamped to valid range
-    """
-    # Define ranges and noise for each metric
-    if metric == "temperature":
-        lo, hi, noise_std = -10.0, 40.0, 0.6
-    elif metric == "humidity":
-        lo, hi, noise_std = 0.0, 100.0, 2.5
-    elif metric == "windspeed":
-        lo, hi, noise_std = 0.0, 50.0, 1.2
-    else:
-        raise ValueError(f"Unknown metric: {metric}")
-    
-    # Get deterministic mean
-    mean = mean_for(station_id, metric, lo, hi)
-    
-    # Add random noise
-    value = mean + random.gauss(0, noise_std)
-    
-    # Clamp and round
-    value = clamp(value, lo, hi)
-    return round(value, 2)
-
-
-def generate_reading(station_id):
-    """
-    Generate a single weather reading with deterministic mean + random noise.
-    
-    Args:
-        station_id: Station identifier
-    """
+def generate_reading(station_id, driver):
+    """Generate a single weather reading using the given sensor driver."""
+    values = driver.read()
     return {
         "station_id": station_id,
         "timestamp": datetime.now(timezone.utc).isoformat(),
-        "temperature": value_for(station_id, "temperature"),
-        "humidity": value_for(station_id, "humidity"),
-        "windspeed": value_for(station_id, "windspeed"),
+        **values,
     }
 
 
-def generate_batch(station_id, size):
-    """
-    Generate a batch of weather readings.
-    
-    Args:
-        station_id: Station identifier
-        size: Number of readings in batch
-    """
-    return [generate_reading(station_id) for _ in range(size)]
+def generate_batch(station_id, size, driver):
+    """Generate a batch of weather readings using the given sensor driver."""
+    return [generate_reading(station_id, driver) for _ in range(size)]
 
 
 async def send_batches(config):
@@ -282,12 +209,15 @@ async def send_batches(config):
     signal.signal(signal.SIGINT, handle_shutdown)
     signal.signal(signal.SIGTERM, handle_shutdown)
     
+    driver = SimulatedSensorDriver(station_id)
+
     batch_num = 1
-    
+
     print(f"Weather Station Client: {station_id}")
     print(f"Target: {server_host}:{server_port}")
     print(f"Batch interval: {batch_interval}s")
     print(f"Buffer limit: {max_buffer_records} records")
+    print(f"Sensor driver: {driver.__class__.__name__}")
     print()
     
     # Outer infinite loop - keeps client alive forever
@@ -346,7 +276,7 @@ async def send_batches(config):
             while not shutdown:
                 # Generate a batch
                 batch_size = random.randint(batch_size_min, batch_size_max)
-                batch = generate_batch(station_id, batch_size)
+                batch = generate_batch(station_id, batch_size, driver)
                 
                 # Convert to JSON line
                 json_line = json.dumps(batch) + "\n"
@@ -418,7 +348,7 @@ async def send_batches(config):
                     # Generate and buffer a batch
                     if waited >= batch_interval:
                         batch_size = random.randint(batch_size_min, batch_size_max)
-                        batch = generate_batch(station_id, batch_size)
+                        batch = generate_batch(station_id, batch_size, driver)
                         
                         if len(buffer) < max_buffer_records:
                             buffer.append(batch)

@@ -3,10 +3,10 @@ let chart = null;
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', async () => {
     console.log('[Init] Loading dashboard...');
-    
+
     // Load stations first
     await loadStations();
-    
+
     // Setup event listeners
     document.getElementById('station-select').addEventListener('change', refreshAll);
     document.getElementById('metric-select').addEventListener('change', refreshAll);
@@ -15,9 +15,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('toggleRaw').addEventListener('change', refreshAll);
     document.getElementById('toggleRolling').addEventListener('change', refreshAll);
     document.getElementById('rollingWindow').addEventListener('change', refreshAll);
-    
+
     // Initial refresh
     await refreshAll();
+
+    // Auto-refresh every 5 seconds to match station batch interval
+    setInterval(refreshAll, 5000);
 });
 
 /**

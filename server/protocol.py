@@ -12,12 +12,15 @@ MAX_LINE_SIZE = 65536  # Maximum size of a single line (bytes)
 MAX_BATCH_SIZE = 50    # Maximum number of readings per batch
 
 # Valid ranges for weather measurements
-TEMPERATURE_MIN = -10
-TEMPERATURE_MAX = 40
+TEMPERATURE_MIN = -40
+TEMPERATURE_MAX = 85
 HUMIDITY_MIN = 0
 HUMIDITY_MAX = 100
 WINDSPEED_MIN = 0
-WINDSPEED_MAX = 50
+WINDSPEED_MAX = 100
+
+# Station ID constraints
+STATION_ID_MAX_LENGTH = 64
 
 
 def validate_timestamp(timestamp_str: str) -> None:
@@ -91,11 +94,13 @@ def validate_batch(batch: list) -> None:
             if field not in item:
                 raise ValueError(f"missing {field} at index {index}")
         
-        # Rule 5: station_id must be non-empty string
+        # Rule 5: station_id must be non-empty string within length limit
         if not isinstance(item["station_id"], str):
             raise ValueError(f"invalid station_id at index {index} (expected string)")
         if not item["station_id"]:
             raise ValueError(f"empty station_id at index {index}")
+        if len(item["station_id"]) > STATION_ID_MAX_LENGTH:
+            raise ValueError(f"station_id too long at index {index} (max {STATION_ID_MAX_LENGTH} chars)")
         
         # Rule 6: timestamp must be valid ISO 8601 format
         try:
